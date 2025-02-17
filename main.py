@@ -13,6 +13,7 @@ class TicTacToe(App):
         self.current_player = 'X'
         self.board = [['' for _ in range(3)] for _ in range(3)]
         self.vs_computer = False  # Default mode: Player vs Player
+        self.difficulty = 'Easy'  # Default difficulty: Easy
         
         self.layout = BoxLayout(orientation='vertical', padding=20, spacing=10)
         self.grid = GridLayout(cols=3, spacing=10)
@@ -30,12 +31,17 @@ class TicTacToe(App):
         self.mode_button = Button(text='Play vs Computer', font_size=20, size_hint=(1, 0.15), background_color=(0, 0, 1, 1))
         self.mode_button.bind(on_press=self.toggle_mode)
         
+        # Add difficulty button
+        self.difficulty_button = Button(text=f'Difficulty: {self.difficulty}', font_size=20, size_hint=(1, 0.15), background_color=(0, 1, 1, 1))
+        self.difficulty_button.bind(on_press=self.toggle_difficulty)
+        
         self.developer_label = Label(text='Developed by Zunaiyed', font_size=14, size_hint=(1, 0.05), bold=True, color=(1, 1, 1, 0.7))
         
         self.layout.add_widget(self.developer_label)
         self.layout.add_widget(self.status_label)
         self.layout.add_widget(self.grid)
         self.layout.add_widget(self.mode_button)
+        self.layout.add_widget(self.difficulty_button)  # Add difficulty button here
         self.layout.add_widget(self.reset_button)
         
         return self.layout
@@ -73,7 +79,27 @@ class TicTacToe(App):
                             self.computer_move()
                     return
     
+    def toggle_difficulty(self, instance):
+        if self.difficulty == 'Easy':
+            self.difficulty = 'Hard'
+        else:
+            self.difficulty = 'Easy'
+        self.difficulty_button.text = f'Difficulty: {self.difficulty}'
+        self.reset_game(None)  # Reset game after changing difficulty
+
     def computer_move(self):
+        if self.difficulty == 'Easy':
+            self.easy_computer_move()
+        else:
+            self.hard_computer_move()
+
+    def easy_computer_move(self):
+        empty_cells = [(i, j) for i in range(3) for j in range(3) if self.board[i][j] == '']
+        if empty_cells:
+            i, j = random.choice(empty_cells)  # Random move
+            self.make_move(self.buttons[i][j])
+
+    def hard_computer_move(self):
         best_score = float('-inf')
         best_move = None
         
@@ -119,7 +145,7 @@ class TicTacToe(App):
                         board[i][j] = ''
                         best_score = min(score, best_score)
             return best_score
-    
+
     def check_winner(self, player):
         for row in self.board:
             if all(cell == player for cell in row):
@@ -146,6 +172,29 @@ class TicTacToe(App):
         mode_text = 'Play vs Human' if self.vs_computer else 'Play vs Computer'
         self.mode_button.text = mode_text
         self.reset_game(None)
+
+    def highlight_winner(self):
+        # Check the winning combination and highlight it
+        for i in range(3):
+            # Check rows
+            if self.board[i][0] == self.board[i][1] == self.board[i][2] != '':
+                self.buttons[i][0].background_color = (0, 1, 0, 1)
+                self.buttons[i][1].background_color = (0, 1, 0, 1)
+                self.buttons[i][2].background_color = (0, 1, 0, 1)
+            # Check columns
+            if self.board[0][i] == self.board[1][i] == self.board[2][i] != '':
+                self.buttons[0][i].background_color = (0, 1, 0, 1)
+                self.buttons[1][i].background_color = (0, 1, 0, 1)
+                self.buttons[2][i].background_color = (0, 1, 0, 1)
+        # Check diagonals
+        if self.board[0][0] == self.board[1][1] == self.board[2][2] != '':
+            self.buttons[0][0].background_color = (0, 1, 0, 1)
+            self.buttons[1][1].background_color = (0, 1, 0, 1)
+            self.buttons[2][2].background_color = (0, 1, 0, 1)
+        if self.board[0][2] == self.board[1][1] == self.board[2][0] != '':
+            self.buttons[0][2].background_color = (0, 1, 0, 1)
+            self.buttons[1][1].background_color = (0, 1, 0, 1)
+            self.buttons[2][0].background_color = (0, 1, 0, 1)
 
 if __name__ == '__main__':
     TicTacToe().run()
